@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Gizli bilgiler – ASLA GitHub'a gitmemeli
+.env
+keys/*.pem
+
+# Diğer
+logs/
+.DS_Store

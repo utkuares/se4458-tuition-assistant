@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: tuition-db
+    environment:
+      POSTGRES_USER: tuition
+      POSTGRES_PASSWORD: tuition_dev_pw
+      POSTGRES_DB: tuition
+    ports:
+      - "5432:5432"
+    volumes:
+      - tuition_db_data:/var/lib/postgresql/data
+
+  db_test:
+    image: postgres:16-alpine
+    container_name: tuition-db-test
+    environment:
+      POSTGRES_USER: tuition
+      POSTGRES_PASSWORD: tuition_test_pw
+      POSTGRES_DB: tuition_test
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+
+volumes:
+  tuition_db_data:

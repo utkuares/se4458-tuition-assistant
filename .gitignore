@@ -4,7 +4,7 @@ __pycache__/
 .venv/
 .pytest_cache/
 
-# Gizli bilgiler – ASLA GitHub'a gitmemeli
+# Gizli bilgiler – Asla GitHub'a gitmemeli
 .env
 keys/*.pem
 

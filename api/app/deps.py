@@ -30,3 +30,14 @@ def get_current_user(
         role=Role(claims["role"]),
         student_no=claims.get("student_no"),
     )
+
+
+def require_roles(*allowed: Role):
+    """Build a dependency that only lets the given roles through."""
+
+    def checker(user: CurrentUser = Depends(get_current_user)) -> CurrentUser:
+        if user.role not in allowed:
+            raise ApiError(403, "FORBIDDEN_ROLE", f"Role '{user.role.value}' is not allowed to perform this action.")
+        return user
+
+    return checker

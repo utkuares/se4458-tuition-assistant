@@ -78,9 +78,9 @@ class Tuition(Base):
     student: Mapped[Student] = relationship(back_populates="tuitions")
 
 
-@property
-def balance(self) -> Decimal:
-        return self.amount - self.paid_amount
+    @property
+    def balance(self) -> Decimal:
+            return self.amount - self.paid_amount
 
 
 class PaymentStatus(str,enum.Enum):

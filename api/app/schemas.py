@@ -1,4 +1,6 @@
 
+from decimal import Decimal
+
 from pydantic import BaseModel, Field
 
 class LoginRequest(BaseModel):
@@ -10,3 +12,20 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
     expires_in: int
     role: str
+
+
+class TermBalance(BaseModel):
+    term: str
+    currency: str
+    tuition: Decimal
+    paid: Decimal
+    balance: Decimal
+
+
+class TuitionSummary(BaseModel):
+    student_no: str
+    scope: str
+    total_tuition: Decimal
+    total_paid: Decimal
+    balance: Decimal
+    terms: list[TermBalance]

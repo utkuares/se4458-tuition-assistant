@@ -1,4 +1,4 @@
-from functools import lru_cache # cache
+from functools import lru_cache  # cache
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -19,6 +19,14 @@ class Settings(BaseSettings):
 
     app_timezone: str = "Europe/Istanbul"
     mobile_daily_query_limit: int = 3
+
+    @property
+    def jwt_private_key(self) -> str:
+        return (PROJECT_ROOT / self.jwt_private_key_path).read_text()
+
+    @property
+    def jwt_public_key(self) -> str:
+        return (PROJECT_ROOT / self.jwt_public_key_path).read_text()
 
 
 @lru_cache

@@ -9,6 +9,7 @@ from app.errors import ApiError
 from app.models import User
 from app.schemas import LoginRequest, TokenResponse
 from app.security import create_access_token, verify_password
+from app.deps import CurrentUser, get_current_user
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -24,3 +25,9 @@ def login(body: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
         expires_in=get_settings().jwt_expire_minutes * 60,
         role=user.role.value,
     )
+
+
+@router.get("/me")
+def me(user: CurrentUser = Depends(get_current_user)) -> dict:
+    """Return the identity of the caller, taken from the Bearer token."""
+    return {"username": user.username, "role": user.role.value, "student_no": user.student_no}

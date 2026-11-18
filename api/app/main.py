@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from app.errors import register_error_handlers
+from app.routers import auth
 
 app = FastAPI(
     title="Tuition API",
@@ -9,6 +10,7 @@ app = FastAPI(
 )
 
 register_error_handlers(app)
+app.include_router(auth.router)
 
 
 @app.get("/api/v1/health", tags=["health"])

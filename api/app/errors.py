@@ -24,7 +24,7 @@ HTTP_ERROR_CODES = {
     405: "METHOD_NOT_ALLOWED",
 }
 
-quit
+
 def register_error_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(ApiError)

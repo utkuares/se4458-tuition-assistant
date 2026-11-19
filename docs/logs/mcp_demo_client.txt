@@ -1,0 +1,19 @@
+Tools on server: ['search_tuition_policies']
+
+Query: When is the Fall payment deadline?
+  [8.1] When is the Fall tuition deadline?  (score 5.971)
+      September 30, 2026. See Section 2.1....
+  [2.1] Fall term  (score 5.493)
+      The payment deadline for the Fall 2026 term is **September 30, 2026**. A student should settle the outstanding...
+
+Query: installment eligibility minimum balance
+  [3.1] Eligibility  (score 4.483)
+      Students with an outstanding balance of at least **$300** may request an installment arrangement. An arrangeme...
+  [5.1] Merit scholarship  (score 2.674)
+      The standard merit scholarship may reduce assessed tuition by **25%** for eligible students. Eligibility is de...
+
+Query: refund after withdrawal
+  [6.2] Later withdrawal  (score 7.592)
+      After the 14-day period, refunds are reviewed individually and are not guaranteed. The AI assistant should dir...
+  [6.1] Early withdrawal  (score 5.305)
+      A student who formally withdraws within **14 calendar days of the term start** may be eligible for a refund of...

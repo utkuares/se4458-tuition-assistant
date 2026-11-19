@@ -1,0 +1,19 @@
+INFO Indexed 25 policy sections from University_Tuition_Policies.md
+INFO:     Started server process [3735]
+INFO:     Waiting for application startup.
+INFO StreamableHTTP session manager started
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     127.0.0.1:58414 - "POST /mcp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58414 - "POST /mcp HTTP/1.1" 200 OK
+INFO search_tuition_policies('When is the Fall payment deadline?') -> ['8.1', '2.1']
+INFO:     127.0.0.1:58414 - "POST /mcp HTTP/1.1" 200 OK
+INFO search_tuition_policies('installment eligibility minimum balance') -> ['3.1', '5.1']
+INFO:     127.0.0.1:58414 - "POST /mcp HTTP/1.1" 200 OK
+INFO search_tuition_policies('refund after withdrawal') -> ['6.2', '6.1']
+INFO:     127.0.0.1:58414 - "POST /mcp HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO StreamableHTTP session manager shutting down
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3735]

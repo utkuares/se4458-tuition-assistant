@@ -9,5 +9,5 @@ __pycache__/
 keys/*.pem
 
 # Diğer
-logs/
+/logs/
 .DS_Store

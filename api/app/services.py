@@ -1,22 +1,19 @@
 from datetime import datetime
+from decimal import Decimal
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import select, text
-
-from app.config import get_settings
-
-from decimal import Decimal
-
-from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.config import get_settings
 from app.errors import ApiError
-from app.models import Student, Tuition
-from app.schemas import TermBalance, TuitionSummary
+from app.models import Payment, PaymentStatus, Student, Tuition, User
+from app.schemas import PaymentRequest, PaymentResponse, TermBalance, TuitionSummary
 
 
 def get_tuition_summary(db: Session, student_no: str, term: str | None = None) -> TuitionSummary:
-    """Return tuition, paid amount and balance for a student (one term or all terms)."""
+    """Returns tuition, paid amount and balance for one term or all terms."""
     if db.get(Student, student_no) is None:
         raise ApiError(404, "STUDENT_NOT_FOUND", f"Student {student_no} not found.")
 
@@ -29,13 +26,7 @@ def get_tuition_summary(db: Session, student_no: str, term: str | None = None) -
         raise ApiError(404, "TUITION_NOT_FOUND", f"No tuition record for student {student_no} in term {term}.")
 
     terms = [
-        TermBalance(
-            term=t.term,
-            currency=t.currency,
-            tuition=t.amount,
-            paid=t.paid_amount,
-            balance=t.balance,
-        )
+        TermBalance(term=t.term, currency=t.currency, tuition=t.amount, paid=t.paid_amount, balance=t.balance)
         for t in rows
     ]
     total_tuition = sum((t.tuition for t in terms), Decimal("0.00"))
@@ -51,9 +42,8 @@ def get_tuition_summary(db: Session, student_no: str, term: str | None = None) -
     )
 
 
-
 def consume_mobile_quota(db: Session, student_no: str) -> int:
-    """Atomically count one mobile query for today. Raises 429 when the daily limit is reached."""
+    """Counts one mobile query for today and raises 429 if the daily limit is reached."""
     settings = get_settings()
     today = datetime.now(ZoneInfo(settings.app_timezone)).date()
 
@@ -77,3 +67,62 @@ def consume_mobile_quota(db: Session, student_no: str) -> int:
             f"Mobile tuition query limit of {settings.mobile_daily_query_limit} per day reached for this student.",
         )
     return used
+
+
+def _duplicate_transaction(transaction_id: str) -> ApiError:
+    """Builds the 409 error for a transaction id that was already used."""
+    return ApiError(409, "DUPLICATE_TRANSACTION", f"Transaction {transaction_id} was already processed.")
+
+
+def process_payment(db: Session, req: PaymentRequest, paid_by_username: str) -> PaymentResponse:
+    """Records a payment in one transaction while the tuition row is locked."""
+    try:
+        if db.scalar(select(Payment.id).where(Payment.transaction_id == req.transaction_id)) is not None:
+            raise _duplicate_transaction(req.transaction_id)
+
+        tuition = db.scalar(
+            select(Tuition)
+            .where(Tuition.student_no == req.student_no, Tuition.term == req.term)
+            .with_for_update()
+        )
+        if tuition is None:
+            raise ApiError(404, "TUITION_NOT_FOUND", f"No tuition record for student {req.student_no} in term {req.term}.")
+
+        if req.amount > tuition.balance:
+            raise ApiError(
+                422,
+                "AMOUNT_EXCEEDS_BALANCE",
+                "Payment amount exceeds the outstanding balance.",
+                details=[{"balance": str(tuition.balance), "requested": str(req.amount)}],
+            )
+
+        payer_id = db.scalar(select(User.id).where(User.username == paid_by_username))
+        tuition.paid_amount = tuition.paid_amount + req.amount
+        db.add(
+            Payment(
+                transaction_id=req.transaction_id,
+                student_no=req.student_no,
+                term=req.term,
+                amount=req.amount,
+                status=PaymentStatus.completed,
+                paid_by_user_id=payer_id,
+            )
+        )
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise _duplicate_transaction(req.transaction_id)
+    except ApiError:
+        db.rollback()
+        raise
+
+    return PaymentResponse(
+        status="COMPLETED",
+        transaction_id=req.transaction_id,
+        student_no=req.student_no,
+        term=req.term,
+        amount=req.amount,
+        currency=tuition.currency,
+        paid_amount=tuition.paid_amount,
+        remaining_balance=tuition.balance,
+    )

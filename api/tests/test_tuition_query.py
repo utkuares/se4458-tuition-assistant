@@ -1,4 +1,3 @@
-# ---------- Banking query ----------
 
 def test_student_can_query_own_tuition_all_terms(client, student1):
     response = client.get("/api/v1/banking/tuition/20230001", headers=student1)
@@ -52,7 +51,6 @@ def test_banking_query_unknown_student_returns_404(client, bank):
     assert response.json()["error"]["code"] == "STUDENT_NOT_FOUND"
 
 
-# ---------- Mobile query ----------
 
 def test_mobile_query_works_without_token(client):
     response = client.get("/api/v1/mobile/tuition/20230001")

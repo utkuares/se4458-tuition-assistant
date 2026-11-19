@@ -1,0 +1,4 @@
+mcp>=2.3
+rank-bm25>=0.2.2
+uvicorn[standard]>=0.32
+pydantic>=2.9

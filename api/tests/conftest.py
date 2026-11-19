@@ -1,7 +1,4 @@
-"""Test setup: separate test database, temporary JWT keys, fresh demo data for every test.
-
-Tests need only the test PostgreSQL from docker-compose (port 5433). No cloud, no LLM.
-"""
+"""Test settings. Tests use their own database and do not need the cloud or an LLM."""
 import os
 import tempfile
 from decimal import Decimal

@@ -1,3 +1,5 @@
+import base64
+
 from functools import lru_cache  # cache
 from pathlib import Path
 
@@ -13,6 +15,8 @@ class Settings(BaseSettings):
 
     jwt_private_key_path: str = "keys/jwt_private.pem"
     jwt_public_key_path: str = "keys/jwt_public.pem"
+    jwt_private_key_b64: str = ""
+    jwt_public_key_b64: str = ""
     jwt_issuer: str = "tuition-auth"
     jwt_audience: str = "tuition-api"
     jwt_expire_minutes: int = 30
@@ -22,10 +26,14 @@ class Settings(BaseSettings):
 
     @property
     def jwt_private_key(self) -> str:
+        if self.jwt_private_key_b64:
+            return base64.b64decode(self.jwt_private_key_b64).decode()
         return (PROJECT_ROOT / self.jwt_private_key_path).read_text()
 
     @property
     def jwt_public_key(self) -> str:
+        if self.jwt_public_key_b64:
+            return base64.b64decode(self.jwt_public_key_b64).decode()
         return (PROJECT_ROOT / self.jwt_public_key_path).read_text()
 
 

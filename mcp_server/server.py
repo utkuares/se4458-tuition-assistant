@@ -38,8 +38,9 @@ def search_tuition_policies(query: str, top_k: int = 3) -> PolicySearchResult:
     return result
 
 
-app = mcp.streamable_http_app(stateless_http=True, json_response=True)
+MCP_HOST = os.getenv("MCP_HOST", "127.0.0.1")
+app = mcp.streamable_http_app(stateless_http=True, json_response=True, host=MCP_HOST)
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host=os.getenv("MCP_HOST", "127.0.0.1"), port=int(os.getenv("MCP_PORT", "8001")))
+    uvicorn.run(app, host=MCP_HOST, port=int(os.getenv("MCP_PORT", "8001")))

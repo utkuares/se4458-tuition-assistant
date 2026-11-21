@@ -1,4 +1,4 @@
-
+"""Policy search MCP server. Runs on port 8001."""
 import logging
 import os
 import sys

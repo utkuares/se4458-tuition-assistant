@@ -1,4 +1,5 @@
 """Test settings. Tests use their own database and do not need the cloud or an LLM."""
+
 import os
 import tempfile
 from decimal import Decimal
@@ -12,7 +13,7 @@ TEST_DATABASE_URL = os.environ.get(
     "postgresql+psycopg://tuition:tuition_test_pw@localhost:5433/tuition_test",
 )
 
-# Point the app to the test database and to throw-away keys BEFORE importing it.
+# Point the app to the test database and to throw-away keys before importing it.
 _keys_dir = Path(tempfile.mkdtemp())
 _key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 (_keys_dir / "private.pem").write_bytes(

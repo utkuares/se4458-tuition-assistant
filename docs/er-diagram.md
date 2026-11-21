@@ -1,5 +1,7 @@
 # ER Diagram
 
+![ER Diagram](er-diagram.png)
+
 ```mermaid
 erDiagram
     %% A student may have more than one tuition record.

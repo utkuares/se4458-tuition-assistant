@@ -3,7 +3,6 @@ BATCH_URL = "/api/v1/admin/tuition/batch"
 UNPAID_URL = "/api/v1/admin/tuition/unpaid"
 
 
-# ---------- Add tuition ----------
 
 def test_add_new_tuition_returns_201(client, admin):
     response = client.post(ADD_URL, headers=admin, json={"student_no": "20230003", "term": "2027-SPRING", "amount": "2000.00"})
@@ -40,7 +39,6 @@ def test_bank_cannot_add_tuition(client, bank):
     assert response.status_code == 403
 
 
-# ---------- Batch ----------
 
 def upload(client, headers, content: str):
     return client.post(BATCH_URL, headers=headers, files={"file": ("tuition.csv", content.encode(), "text/csv")})
@@ -71,7 +69,6 @@ def test_batch_wrong_header_returns_400(client, admin):
     assert response.json()["error"]["code"] == "INVALID_CSV"
 
 
-# ---------- Unpaid list ----------
 
 def test_unpaid_list_is_paged(client, admin):
     first = client.get(f"{UNPAID_URL}?term=2026-FALL&page=1&page_size=1", headers=admin).json()

@@ -1,7 +1,4 @@
-"""Calls the running MCP server with three different questions and prints the results.
 
-Run the server first (python mcp_server/server.py), then:  python mcp_server/demo_queries.py
-"""
 import asyncio
 import os
 

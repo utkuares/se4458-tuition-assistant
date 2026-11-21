@@ -1,0 +1,42 @@
+Gateway: https://tuition-gateway.wonderfulbeach-f2176740.swedencentral.azurecontainerapps.io
+
+== 1. Public route
+[200] GET /api/v1/health
+      {"status":"ok"}
+
+== 2. Protected route without token (blocked by gateway)
+[401] GET /api/v1/banking/tuition/20230001, no token
+      {"message":"Unauthorized"}
+
+== 3. Protected route with a fake token (blocked by gateway)
+[401] GET /api/v1/banking/tuition/20230001, fake token
+      {"message":"Bad token; invalid JSON"}
+
+== 4. Login through the gateway, then call the protected route
+      token received: eyJhbGciOiJSUzI1NiIs...
+[200] GET /api/v1/banking/tuition/20230001, valid token
+      {"student_no":"20230001","scope":"ALL_TERMS","total_tuition":"6000.00","total_paid":"0.00","balance":"6000.00","terms":[{"term":"2026-FALL","currency":"USD","tuition":"3000.00","paid":"0.00","balance"
+[403] GET /api/v1/banking/tuition/20230002, valid token of another student
+      {"error":{"code":"FORBIDDEN_RESOURCE","message":"Students can only view their own tuition.","details":[]}}
+[403] GET /api/v1/admin/tuition/unpaid, student token
+      {"error":{"code":"FORBIDDEN_ROLE","message":"Role 'student' is not allowed to perform this action.","details":[]}}
+
+== 5. Mobile route: 3 queries per student per day
+[200] GET /api/v1/mobile/tuition/20230003 (query 1)
+      {"student_no":"20230003","scope":"ALL_TERMS","total_tuition":"2250.00","total_paid":"2250.00","balance":"0.00","terms":[{"term":"2026-FALL","currency":"USD","tuition":"2250.00","paid":"2250.00","balan
+[200] GET /api/v1/mobile/tuition/20230003 (query 2)
+      {"student_no":"20230003","scope":"ALL_TERMS","total_tuition":"2250.00","total_paid":"2250.00","balance":"0.00","terms":[{"term":"2026-FALL","currency":"USD","tuition":"2250.00","paid":"2250.00","balan
+[200] GET /api/v1/mobile/tuition/20230003 (query 3)
+      {"student_no":"20230003","scope":"ALL_TERMS","total_tuition":"2250.00","total_paid":"2250.00","balance":"0.00","terms":[{"term":"2026-FALL","currency":"USD","tuition":"2250.00","paid":"2250.00","balan
+[429] GET /api/v1/mobile/tuition/20230003 (query 4)
+      {"error":{"code":"DAILY_LIMIT_EXCEEDED","message":"Mobile tuition query limit of 3 per day reached for this student.","details":[]}}
+      gateway rate-limit headers:
+      x-ratelimit-limit-minute: 10
+      x-ratelimit-remaining-minute: 5
+
+== 6. Unknown route
+[404] GET /api/v2/tuition
+      {
+  "message":"no Route matched with those values",
+  "request_id":"1cfbdb74132fec01ea9b2447e01b501d"
+}

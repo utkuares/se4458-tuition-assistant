@@ -11,3 +11,4 @@ keys/*.pem
 # Diğer
 /logs/
 .DS_Store
+azure.env

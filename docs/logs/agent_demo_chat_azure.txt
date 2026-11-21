@@ -1,0 +1,32 @@
+Logged in as student 20230001. Type 'exit' to quit.
+
+You: When is the Fall payment deadline?
+
+Assistant: The Fall 2026 payment deadline is **September 30, 2026**. You must pay the outstanding balance or have an approved installment arrangement by then (Section 2.1).
+
+You: What is my balance?
+
+Assistant: Your total balance is **$6,000.00 USD**: $3,000.00 for Fall 2026 and $3,000.00 for Spring 2027.
+
+You: Can I pay my outstanding balance in installments?
+
+Assistant: Your **$6,000 balance** meets the minimum to request an installment arrangement. The policy allows up to three installments, but the arrangement requires approval and isn’t guaranteed (Sections 3.1, 3.4, and 8.2).
+
+You: Pay 100 for 2026-FALL
+
+Assistant: I’ve prepared a **$100.00 USD** payment for **Fall 2026**. It has **not been paid**—please confirm it in the app.
+
+--- Payment confirmation ---
+Student:         20230001
+Term:            2026-FALL
+Amount:          100.00 USD
+Current balance: 3000.00 USD
+Type 'yes' to confirm, anything else to cancel: ues
+Payment cancelled.
+
+You: exit
+
+--- Second session (payment confirmed, other student refused) ---
+
+pbpaste >> docs/logs/agent_demo_chat_azure.txt
+tail -5 docs/logs/agent_demo_chat_azure.txt

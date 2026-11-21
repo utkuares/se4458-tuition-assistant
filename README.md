@@ -29,6 +29,7 @@ the MCP server (search in `University_Tuition_Policies.md`), the Tuition REST AP
 | Gateway access log | [gateway_access_log.txt](docs/logs/gateway_access_log.txt) |
 | Unit tests run | [pytest-results.png](docs/pytest-results.png), see [Tests](#tests) |
 | ER diagram | [docs/er-diagram.md](docs/er-diagram.md) |
+| Agent chat on Azure (matches the trace) | [agent_demo_chat_azure.txt](docs/logs/agent_demo_chat_azure.txt) |
 
 ## Architecture
 

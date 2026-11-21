@@ -160,3 +160,20 @@ def test_payment_note_is_sent_with_next_question():
 
     roles = [item["role"] for item in llm.calls[0]["input"]]
     assert roles == ["developer", "user"]
+
+def test_trace_has_question_tool_call_and_answer(tmp_path):
+    tools = make_tools()
+    llm = FakeLLM([
+        ([function_call("get_my_tuition", {"term": None})], ""),
+        ([], "You owe 3000 USD."),
+    ])
+    trace = tmp_path / "trace.jsonl"
+    agent = TuitionAgent(llm, "test-model", tools, trace_path=trace)
+
+    agent.ask("What is my balance?")
+
+    lines = [json.loads(line) for line in trace.read_text().splitlines()]
+    assert lines[0]["question"] == "What is my balance?"
+    assert lines[1]["tool"] == "get_my_tuition"
+    assert lines[1]["result"]["balance"] == "3000.00"
+    assert lines[2]["answer"] == "You owe 3000 USD."

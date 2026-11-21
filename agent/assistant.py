@@ -39,18 +39,20 @@ class TuitionAgent:
         items = [{"role": "developer", "content": n} for n in self.notes]
         items.append({"role": "user", "content": question})
         self.notes = []
+        self._trace({"question": question})
 
         response = self._call(items)
         for _ in range(self.max_steps):
             calls = [item for item in response.output if item.type == "function_call"]
             if not calls:
+                self._trace({"answer": response.output_text})
                 return response.output_text
 
             outputs = []
             for call in calls:
                 args = json.loads(call.arguments or "{}")
                 result = self.tools.run(call.name, args)
-                self._trace(call.name, args, result)
+                self._trace({"tool": call.name, "args": args, "result": result})
                 outputs.append({
                     "type": "function_call_output",
                     "call_id": call.call_id,
@@ -74,15 +76,10 @@ class TuitionAgent:
         self.previous_response_id = response.id
         return response
 
-    def _trace(self, tool, args, result):
+    def _trace(self, data):
         if self.trace_path is None:
             return
         self.trace_path.parent.mkdir(parents=True, exist_ok=True)
-        entry = {
-            "time": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            "tool": tool,
-            "args": args,
-            "result": result,
-        }
+        entry = {"time": datetime.now(timezone.utc).isoformat(timespec="seconds"), **data}
         with self.trace_path.open("a") as f:
             f.write(json.dumps(entry) + "\n")

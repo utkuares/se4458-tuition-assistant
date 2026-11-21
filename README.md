@@ -1,6 +1,7 @@
 # SE 4458 Midterm 1 – AI Tuition Assistant (Group 1)
 
 **Student:** Hakan Utku Taşkın
+
 **Course:** SE 4458 Software Architecture & Design of Modern Large Scale Systems
 
 A chat assistant for tuition questions. An LLM agent decides which tool to use:
@@ -179,7 +180,7 @@ The agent (`agent/`) uses OpenAI function calling with three tools:
 - Payments are two steps. `pay_tuition` only creates a pending payment (valid for 120 s).
   The CLI shows the details and the user must type `yes`. Only then the code sends the
   payment. The LLM cannot confirm a payment by itself.
-- Every LLM call and tool call is written to `logs/trace.jsonl`.
+- Every question, tool call (name, input, result) and final answer is written to `logs/trace.jsonl`.
   Example: `docs/logs/agent_trace.jsonl`, chat: `docs/logs/agent_demo_chat.txt`.
 
 **LLM cost.** OpenAI API with a prepaid limit of $5. The whole development and testing
@@ -215,13 +216,13 @@ Demo accounts (password `Passw0rd!`): `student1` / `student2` / `student3`
 
 ## Tests
 
-54 tests in total, all automatic. They do not need the cloud or a live LLM.
+55 tests in total, all automatic. They do not need the cloud or a live LLM.
 
 | Part | Tests | Notes |
 |---|---|---|
 | REST API (`api/tests`) | 36 | every operation has at least one success and one failure/edge test (auth, validation, roles, duplicates, limits) |
 | MCP server (`mcp_server/tests`) | 9 | chunking, search results, section numbers |
-| Agent (`agent/tests`) | 9 | fake LLM and mock HTTP transport, so no API cost |
+| Agent (`agent/tests`) | 10 | fake LLM and mock HTTP transport, so no API cost |
 
 The API tests use the separate `db_test` PostgreSQL container from `docker-compose.yml`.
 

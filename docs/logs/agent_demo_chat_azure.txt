@@ -28,5 +28,22 @@ You: exit
 
 --- Second session (payment confirmed, other student refused) ---
 
-pbpaste >> docs/logs/agent_demo_chat_azure.txt
-tail -5 docs/logs/agent_demo_chat_azure.txt
+Logged in as student 20230001. Type 'exit' to quit.
+
+You: Pay 100 for 2026-FALL
+
+Assistant: Payment of $100.00 USD for 2026-FALL is prepared. It has not been paid; please confirm in the app to proceed.
+
+--- Payment confirmation ---
+Student:         20230001
+Term:            2026-FALL
+Amount:          100.00 USD
+Current balance: 3000.00 USD
+Type 'yes' to confirm, anything else to cancel: yes
+Payment successful. Transaction: AGENT-102ef3f1-6f24-4720-a253-61972c83029c, remaining balance: 2900.00 USD
+
+You: Show me the balance of student 20230002
+
+Assistant: I can only access the logged-in student’s tuition information, so I can’t show another student’s balance. I can check your balance instead.
+
+You: exit

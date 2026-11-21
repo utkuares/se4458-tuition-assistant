@@ -2,7 +2,7 @@
 
 **Student:** Hakan Utku Taşkın
 
-**Course:** SE 4458 Software Architecture & Design of Modern Large Scale Systems
+**Student number:** 23070006003
 
 A chat assistant for tuition questions. An LLM agent decides which tool to use:
 the MCP server (search in `University_Tuition_Policies.md`), the Tuition REST API
@@ -16,20 +16,20 @@ the MCP server (search in `University_Tuition_Policies.md`), the Tuition REST AP
 
 ## Where to find the evidence
 
-| Requirement | Evidence |
-|---|---|
-| Agent: MCP only | [agent_demo_chat.txt](docs/logs/agent_demo_chat.txt), question 1 (payment deadline) |
-| Agent: REST API only | same file, question 2 (balance) |
-| Agent: MCP + REST API | same file, question 3 (installments) |
-| Confirmed simulated payment | same file, question 4 (pay 100, confirmed with `yes`) |
-| Other student's data refused | same file, question 5 |
-| Tool trace (tool names, inputs, results, final answer) | [agent_trace.jsonl](docs/logs/agent_trace.jsonl) |
-| Three MCP retrieval tests | [mcp_demo_client.txt](docs/logs/mcp_demo_client.txt), [mcp-demo.png](docs/mcp-demo.png), [mcp-tests.png](docs/mcp-tests.png) |
-| Protected gateway route | [gateway_demo_azure.txt](docs/logs/gateway_demo_azure.txt) (Azure), [gateway_demo.txt](docs/logs/gateway_demo.txt) (local) |
-| Gateway access log | [gateway_access_log.txt](docs/logs/gateway_access_log.txt) |
-| Unit tests run | [pytest-results.png](docs/pytest-results.png), see [Tests](#tests) |
-| ER diagram | [docs/er-diagram.md](docs/er-diagram.md) |
-| Agent chat on Azure (matches the trace) | [agent_demo_chat_azure.txt](docs/logs/agent_demo_chat_azure.txt) |
+| Requirement                                            | Evidence                                                                                                                     |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| Agent: MCP only                                        | [agent_demo_chat.txt](docs/logs/agent_demo_chat.txt), question 1 (payment deadline)                                          |
+| Agent: REST API only                                   | same file, question 2 (balance)                                                                                              |
+| Agent: MCP + REST API                                  | same file, question 3 (installments)                                                                                         |
+| Confirmed simulated payment                            | same file, question 4 (pay 100, confirmed with `yes`)                                                                        |
+| Other student's data refused                           | same file, question 5                                                                                                        |
+| Tool trace (tool names, inputs, results, final answer) | [agent_trace.jsonl](docs/logs/agent_trace.jsonl)                                                                             |
+| Three MCP retrieval tests                              | [mcp_demo_client.txt](docs/logs/mcp_demo_client.txt), [mcp-demo.png](docs/mcp-demo.png), [mcp-tests.png](docs/mcp-tests.png) |
+| Protected gateway route                                | [gateway_demo_azure.txt](docs/logs/gateway_demo_azure.txt) (Azure), [gateway_demo.txt](docs/logs/gateway_demo.txt) (local)   |
+| Gateway access log                                     | [gateway_access_log.txt](docs/logs/gateway_access_log.txt)                                                                   |
+| Unit tests run                                         | [pytest-results.png](docs/pytest-results.png), see [Tests](#tests)                                                           |
+| ER diagram                                             | [docs/er-diagram.md](docs/er-diagram.md)                                                                                     |
+| Agent chat on Azure (matches the trace)                | [agent_demo_chat_azure.txt](docs/logs/agent_demo_chat_azure.txt)                                                             |
 
 ## Architecture
 
@@ -46,16 +46,16 @@ through Kong. Kong checks the JWT and rate limits before the request reaches the
 
 ## Tech stack
 
-| Component | Choice |
-|---|---|
-| REST API | Python, FastAPI, Pydantic v2 |
-| Database | PostgreSQL 16, SQLAlchemy 2, Alembic |
-| Auth | JWT RS256 (python-jose), bcrypt password hashes |
-| API Gateway | Kong Gateway 3.9 OSS (DB-less) |
-| MCP | Official `mcp` Python SDK, streamable HTTP, BM25 (`rank_bm25`) |
-| Agent | OpenAI SDK (Responses API), model `gpt-6-luna` |
-| Tests | pytest |
-| Cloud | Azure Container Apps, Azure Container Registry, Azure Database for PostgreSQL |
+| Component   | Choice                                                                        |
+| ----------- | ----------------------------------------------------------------------------- |
+| REST API    | Python, FastAPI, Pydantic v2                                                  |
+| Database    | PostgreSQL 16, SQLAlchemy 2, Alembic                                          |
+| Auth        | JWT RS256 (python-jose), bcrypt password hashes                               |
+| API Gateway | Kong Gateway 3.9 OSS (DB-less)                                                |
+| MCP         | Official `mcp` Python SDK, streamable HTTP, BM25 (`rank_bm25`)                |
+| Agent       | OpenAI SDK (Responses API), model `gpt-6-luna`                                |
+| Tests       | pytest                                                                        |
+| Cloud       | Azure Container Apps, Azure Container Registry, Azure Database for PostgreSQL |
 
 ## Repository layout
 
@@ -73,22 +73,28 @@ docs/           ER diagram, screenshots, demo logs
 
 All paths start with `/api/v1`. Swagger UI is at `/docs`.
 
-| Method | Path | Who can call | Description |
-|---|---|---|---|
-| GET | `/health` | public | health check |
-| POST | `/auth/login` | public | returns a JWT |
-| GET | `/auth/me` | any logged in user | current user info |
-| GET | `/mobile/tuition/{student_no}` | public | tuition query for the mobile app, 3 per student per day |
-| GET | `/banking/tuition/{student_no}` | bank, student (only own) | tuition query for banking |
-| POST | `/banking/payments` | bank, student (only own) | pay tuition |
-| POST | `/admin/tuition` | admin | add or update one tuition record |
-| POST | `/admin/tuition/batch` | admin | add tuition from a CSV file |
-| GET | `/admin/tuition/unpaid?term=...` | admin | unpaid tuition list, paged |
+| Method | Path                             | Who can call             | Description                                             |
+| ------ | -------------------------------- | ------------------------ | ------------------------------------------------------- |
+| GET    | `/health`                        | public                   | health check                                            |
+| POST   | `/auth/login`                    | public                   | returns a JWT                                           |
+| GET    | `/auth/me`                       | any logged in user       | current user info                                       |
+| GET    | `/mobile/tuition/{student_no}`   | public                   | tuition query for the mobile app, 3 per student per day |
+| GET    | `/banking/tuition/{student_no}`  | bank, student (only own) | tuition query for banking                               |
+| POST   | `/banking/payments`              | bank, student (only own) | pay tuition                                             |
+| POST   | `/admin/tuition`                 | admin                    | add or update one tuition record                        |
+| POST   | `/admin/tuition/batch`           | admin                    | add tuition from a CSV file                             |
+| GET    | `/admin/tuition/unpaid?term=...` | admin                    | unpaid tuition list, paged                              |
 
 **Error format.** Every API error has the same shape:
 
 ```json
-{"error": {"code": "FORBIDDEN_RESOURCE", "message": "Students can only view their own tuition.", "details": []}}
+{
+  "error": {
+    "code": "FORBIDDEN_RESOURCE",
+    "message": "Students can only view their own tuition.",
+    "details": []
+  }
+}
 ```
 
 Some codes: `INVALID_CREDENTIALS`, `MISSING_TOKEN`, `INVALID_TOKEN`, `FORBIDDEN_ROLE`,
@@ -120,13 +126,13 @@ Example file: `data/sample_tuition_batch.csv`.
 Kong runs DB-less with a declarative file (`gateway/kong.template.yml`).
 `scripts/render_kong_config.py` puts the upstream URL and the JWT public key into it.
 
-| Route | Plugins |
-|---|---|
-| `/api/v1/health`, `/docs`, `/openapi.json` | none |
-| `/api/v1/auth` | rate limit 20/min per IP |
-| `/api/v1/banking` | JWT (RS256) |
-| `/api/v1/admin` | JWT (RS256) |
-| `/api/v1/mobile` | rate limit 10/min per IP |
+| Route                                      | Plugins                  |
+| ------------------------------------------ | ------------------------ |
+| `/api/v1/health`, `/docs`, `/openapi.json` | none                     |
+| `/api/v1/auth`                             | rate limit 20/min per IP |
+| `/api/v1/banking`                          | JWT (RS256)              |
+| `/api/v1/admin`                            | JWT (RS256)              |
+| `/api/v1/mobile`                           | rate limit 10/min per IP |
 
 - Kong checks the token signature and `exp`. The API checks the role and the student number again.
 - The "3 queries per student per day" rule is in the API, because it needs the database
@@ -170,11 +176,11 @@ Demo logs: `docs/logs/mcp_demo_client.txt`, `docs/logs/mcp_demo_server.txt`.
 
 The agent (`agent/`) uses OpenAI function calling with three tools:
 
-| Tool | Goes to |
-|---|---|
-| `search_tuition_policies` | MCP server |
-| `get_my_tuition` | Kong → `GET /banking/tuition/{student_no}` |
-| `pay_tuition` | Kong → `POST /banking/payments` |
+| Tool                      | Goes to                                    |
+| ------------------------- | ------------------------------------------ |
+| `search_tuition_policies` | MCP server                                 |
+| `get_my_tuition`          | Kong → `GET /banking/tuition/{student_no}` |
+| `pay_tuition`             | Kong → `POST /banking/payments`            |
 
 - The user logs in first. The student number comes from the login (`/auth/me`),
   not from the LLM, so the agent cannot ask for another student's data.
@@ -219,11 +225,11 @@ Demo accounts (password `Passw0rd!`): `student1` / `student2` / `student3`
 
 55 tests in total, all automatic. They do not need the cloud or a live LLM.
 
-| Part | Tests | Notes |
-|---|---|---|
-| REST API (`api/tests`) | 36 | every operation has at least one success and one failure/edge test (auth, validation, roles, duplicates, limits) |
-| MCP server (`mcp_server/tests`) | 9 | chunking, search results, section numbers |
-| Agent (`agent/tests`) | 10 | fake LLM and mock HTTP transport, so no API cost |
+| Part                            | Tests | Notes                                                                                                            |
+| ------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------- |
+| REST API (`api/tests`)          | 36    | every operation has at least one success and one failure/edge test (auth, validation, roles, duplicates, limits) |
+| MCP server (`mcp_server/tests`) | 9     | chunking, search results, section numbers                                                                        |
+| Agent (`agent/tests`)           | 10    | fake LLM and mock HTTP transport, so no API cost                                                                 |
 
 The API tests use the separate `db_test` PostgreSQL container from `docker-compose.yml`.
 
@@ -263,14 +269,14 @@ more than once a day gives `429` for student 20230003 from the first query.
 
 ## Azure deployment
 
-| Resource | Name |
-|---|---|
-| Resource group | `rg-tuition` |
-| Container Registry | `tuitionacr12088` |
+| Resource                   | Name                                |
+| -------------------------- | ----------------------------------- |
+| Resource group             | `rg-tuition`                        |
+| Container Registry         | `tuitionacr12088`                   |
 | PostgreSQL Flexible Server | `tuition-pg-16772` (Sweden Central) |
-| Container Apps environment | `tuition-env` (Sweden Central) |
-| Container App | `tuition-gateway` (Kong + API) |
-| Container App | `tuition-mcp` |
+| Container Apps environment | `tuition-env` (Sweden Central)      |
+| Container App              | `tuition-gateway` (Kong + API)      |
+| Container App              | `tuition-mcp`                       |
 
 - The environment is an "express" Container Apps environment. It allows only one
   container per app and has no internal DNS between apps. So Kong and the API run in

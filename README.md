@@ -11,6 +11,23 @@ the MCP server (search in `University_Tuition_Policies.md`), the Tuition REST AP
 - **Swagger:** https://tuition-gateway.wonderfulbeach-f2176740.swedencentral.azurecontainerapps.io/docs
 - **MCP server (Azure):** https://tuition-mcp.wonderfulbeach-f2176740.swedencentral.azurecontainerapps.io/mcp
 - **Video:** _link here_
+- **OpenAPI spec:** [docs/openapi.json](docs/openapi.json)
+
+## Where to find the evidence
+
+| Requirement | Evidence |
+|---|---|
+| Agent: MCP only | [agent_demo_chat.txt](docs/logs/agent_demo_chat.txt), question 1 (payment deadline) |
+| Agent: REST API only | same file, question 2 (balance) |
+| Agent: MCP + REST API | same file, question 3 (installments) |
+| Confirmed simulated payment | same file, question 4 (pay 100, confirmed with `yes`) |
+| Other student's data refused | same file, question 5 |
+| Tool trace (tool names, inputs, results, final answer) | [agent_trace.jsonl](docs/logs/agent_trace.jsonl) |
+| Three MCP retrieval tests | [mcp_demo_client.txt](docs/logs/mcp_demo_client.txt), [mcp-demo.png](docs/mcp-demo.png), [mcp-tests.png](docs/mcp-tests.png) |
+| Protected gateway route | [gateway_demo_azure.txt](docs/logs/gateway_demo_azure.txt) (Azure), [gateway_demo.txt](docs/logs/gateway_demo.txt) (local) |
+| Gateway access log | [gateway_access_log.txt](docs/logs/gateway_access_log.txt) |
+| Unit tests run | [pytest-results.png](docs/pytest-results.png), see [Tests](#tests) |
+| ER diagram | [docs/er-diagram.md](docs/er-diagram.md) |
 
 ## Architecture
 
@@ -77,7 +94,24 @@ Some codes: `INVALID_CREDENTIALS`, `MISSING_TOKEN`, `INVALID_TOKEN`, `FORBIDDEN_
 `DAILY_LIMIT_EXCEEDED`, `INVALID_CSV`, `VALIDATION_ERROR`.
 
 **Payments** need a `transaction_id`. The same id is accepted only once, so a retry
-does not pay twice (`409 DUPLICATE_TRANSACTION`).
+does not pay twice (`409 DUPLICATE_TRANSACTION`). A payment above the balance is
+rejected (`422`).
+
+**Term or overall balance.** Both tuition queries take an optional `term` query
+parameter. Without it the response covers all terms (`"scope": "ALL_TERMS"`), with it
+only that term. The response always has `total_tuition`, `total_paid`, `balance`
+and a list of terms.
+
+**Add Tuition duplicate rule.** One record per student and term. If the record does not
+exist it is created (`201`). If it exists the amount is updated (`200`). The new amount
+cannot be lower than what is already paid (`422`), and the currency cannot change after
+a payment (`422`).
+
+**Batch CSV.** Header must be `studentNo,term,amount,currency`, UTF-8, at most 1 MB and
+1000 rows. Each row uses the same rule as Add Tuition. Good rows are saved, bad rows are
+listed in the response with the row number and reason
+(`total_rows`, `success_count`, `failure_count`, `failures`).
+Example file: `data/sample_tuition_batch.csv`.
 
 ## API Gateway (Kong)
 
@@ -98,12 +132,35 @@ Kong runs DB-less with a declarative file (`gateway/kong.template.yml`).
 - `gateway/smoke_test.sh` tests all of this. Results: `docs/logs/gateway_demo.txt` (local)
   and `docs/logs/gateway_demo_azure.txt` (Azure).
 
+Example gateway error (protected route without a token, blocked by Kong):
+
+```
+GET /api/v1/banking/tuition/20230001  ->  401 {"message":"Unauthorized"}
+```
+
 ## MCP server
 
-`mcp_server/server.py` has one tool: `search_tuition_policies(query, top_k)`.
-The policy document is split into sections and indexed with BM25. The tool returns
-the best sections with their section numbers, so the agent can cite them
-(for example "Section 3.4").
+`mcp_server/server.py` is a real MCP SDK server (streamable HTTP, path `/mcp`) with one tool.
+
+**Tool schema**
+
+```
+search_tuition_policies(query: str, top_k: int = 3)   # top_k is limited to 1..5
+-> {
+     "document": "University_Tuition_Policies.md",
+     "query": "...",
+     "matches": [ {"section": "3.4", "heading": "...", "text": "...", "score": 4.12} ]
+   }
+```
+
+**Indexing approach**
+
+- The document is split into chunks at its numbered headings (`## 3.` / `### 3.4`),
+  so every chunk is one policy section and keeps its section number.
+- Text is lowercased, stop words are removed and a plural `s` is dropped.
+- The chunks are indexed with BM25 (`rank_bm25`) **once, when the server starts**.
+  Questions only search the existing index, the document is not indexed again.
+- Full-text search only, no embeddings, so there is no extra cost.
 
 Demo logs: `docs/logs/mcp_demo_client.txt`, `docs/logs/mcp_demo_server.txt`.
 
@@ -158,15 +215,49 @@ Demo accounts (password `Passw0rd!`): `student1` / `student2` / `student3`
 
 ## Tests
 
-54 tests in total (API, MCP server, agent). The agent tests use a fake LLM and a mock
-HTTP transport, so they do not cost money.
+54 tests in total, all automatic. They do not need the cloud or a live LLM.
+
+| Part | Tests | Notes |
+|---|---|---|
+| REST API (`api/tests`) | 36 | every operation has at least one success and one failure/edge test (auth, validation, roles, duplicates, limits) |
+| MCP server (`mcp_server/tests`) | 9 | chunking, search results, section numbers |
+| Agent (`agent/tests`) | 9 | fake LLM and mock HTTP transport, so no API cost |
+
+The API tests use the separate `db_test` PostgreSQL container from `docker-compose.yml`.
 
 ```bash
+docker compose up -d db_test
 cd api && pytest && cd ..
 cd mcp_server && pytest && cd ..
 cd agent && pytest && cd ..
 ./gateway/smoke_test.sh           # needs Kong and the API running
 ```
+
+Result screenshot: [docs/pytest-results.png](docs/pytest-results.png).
+
+## Try it on Azure
+
+No setup is needed for the gateway tests:
+
+```bash
+GATEWAY_URL=https://tuition-gateway.wonderfulbeach-f2176740.swedencentral.azurecontainerapps.io ./gateway/smoke_test.sh
+```
+
+The agent runs on your computer and uses the Azure gateway and MCP server
+(needs `OPENAI_API_KEY` in `.env`):
+
+```bash
+GATEWAY_URL=https://tuition-gateway.wonderfulbeach-f2176740.swedencentral.azurecontainerapps.io \
+MCP_URL=https://tuition-mcp.wonderfulbeach-f2176740.swedencentral.azurecontainerapps.io/mcp \
+python agent/chat.py
+```
+
+Log in as `student1` / `Passw0rd!` and ask for example:
+"When is the payment deadline?", "What is my balance?",
+"Can I pay my outstanding balance in installments?", "Pay 100 for 2026-FALL".
+
+Note: the mobile route allows 3 queries per student per day, so running the smoke test
+more than once a day gives `429` for student 20230003 from the first query.
 
 ## Azure deployment
 
@@ -188,6 +279,10 @@ cd agent && pytest && cd ..
   `docker buildx --platform linux/amd64` and pushed.
 - Secrets (DB URL, JWT keys) are Container App secrets, not in the image or the repo.
 - Deploy the gateway: `./scripts/deploy_gateway_azure.sh` (reads a local `azure.env`, not committed).
+- The database allows connections only from Azure services and one admin IP (firewall rules).
+  It was migrated (`alembic upgrade head`) and seeded (`scripts/seed.py`) from the admin computer.
+- The agent CLI is not deployed. It is a command line program that runs on the user's computer
+  and connects to the cloud gateway and MCP server.
 
 ## Assumptions
 
@@ -201,3 +296,16 @@ cd agent && pytest && cd ..
   daily limit and Kong's per-IP rate limit.
 - Payments are simulated records. No real money or card processing.
 - The agent can not approve installments. It only explains the rules (policy 3.4).
+- Rounding: amounts must have at most 2 decimals, otherwise the API returns `400`.
+  Nothing is rounded silently.
+- Identity: the agent uses the student number from the login token, never one written in
+  the chat. A student token can only read and pay its own tuition (`403` otherwise).
+  The bank role can query and pay for any student. Admin cannot pay or use banking routes.
+- The policy document is only for rules. Balances and payments always come from the database.
+
+## Clean up
+
+```bash
+docker compose down                 # local containers (add -v to delete the data)
+az group delete -n rg-tuition -y    # all Azure resources, after grading
+```

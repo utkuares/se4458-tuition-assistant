@@ -1,0 +1,62 @@
+# Kong settings. No database. The script makes kong.yml from this file.
+_format_version: "3.0"
+_transform: true
+
+# The API that gets all requests.
+services:
+  - name: tuition-api
+    url: ${UPSTREAM_URL}
+    connect_timeout: 5000
+    read_timeout: 15000
+    routes:
+      # Check if the API is up. Open to everyone.
+      - name: health
+        paths: [/api/v1/health]
+        strip_path: false
+
+      # Swagger page.
+      - name: docs
+        paths: [/docs, /openapi.json]
+        strip_path: false
+
+      # Login. Open to everyone, max 20 requests per minute per IP.
+      - name: auth
+        paths: [/api/v1/auth]
+        strip_path: false
+        plugins:
+          - name: rate-limiting
+            config: {minute: 20, policy: local, limit_by: ip}
+
+      # Balance and payment. Needs a valid token.
+      - name: banking
+        paths: [/api/v1/banking]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config: {key_claim_name: iss, claims_to_verify: [exp]}
+
+      # Admin. Needs a valid token.
+      - name: admin
+        paths: [/api/v1/admin]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config: {key_claim_name: iss, claims_to_verify: [exp]}
+
+      # Mobile query. No login. The API allows 3 queries per student per day.
+      # The gateway also allows max 10 requests per minute per IP.
+      - name: mobile
+        paths: [/api/v1/mobile]
+        strip_path: false
+        plugins:
+          - name: rate-limiting
+            config: {minute: 10, policy: local, limit_by: ip}
+
+# Who makes the tokens. Kong checks the token signature with this public key.
+consumers:
+  - username: tuition-auth-service
+    jwt_secrets:
+      - key: tuition-auth
+        algorithm: RS256
+        rsa_public_key: |
+${JWT_PUBLIC_KEY}

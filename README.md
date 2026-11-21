@@ -289,7 +289,7 @@ more than once a day gives `429` for student 20230003 from the first query.
 ## Assumptions
 
 - Currency is USD, like the policy document. No currency conversion.
-- Terms use the format `YYYY-FALL` / `YYYY-SPRING` (policy section 1).
+- Terms use the format `YYYY-FALL` / `YYYY-SPRING` (policy section 1). `YYYY-SUMMER` is also accepted.
 - Money is stored as `NUMERIC(12,2)` and handled as `Decimal`. JSON amounts are strings (`"1500.00"`).
 - No overpayment: a payment cannot be more than the current balance (policy 7.2).
 - The mobile daily limit counts per student number per calendar day (Europe/Istanbul time).
